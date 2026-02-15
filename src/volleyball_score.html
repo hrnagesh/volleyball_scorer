@@ -6,9 +6,40 @@
     <meta name="apple-mobile-web-app-capable" content="true">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="VB Match">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#1f1f1f">
+    <meta name="description" content="Modern Volleyball Match Tracker - Real-time scoring with user authentication">
     <title>VB Match Tracker</title>
     <style>
+        :root {
+            --md-sys-color-primary: #6750a4;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-primary-container: #eaddff;
+            --md-sys-color-on-primary-container: #21005e;
+            --md-sys-color-secondary: #625b71;
+            --md-sys-color-tertiary: #7d5260;
+            --md-sys-color-error: #f2b8b5;
+            --md-sys-color-background: #fffbfe;
+            --md-sys-color-surface: #fffbfe;
+            --md-sys-color-outline: #938f99;
+            --team1-gradient: linear-gradient(135deg, #4285f4 0%, #1f5bcd 100%);
+            --team2-gradient: linear-gradient(135deg, #ea4335 0%, #c5191d 100%);
+        }
+
+        html.dark-mode {
+            --md-sys-color-primary: #d0bcff;
+            --md-sys-color-on-primary: #381e72;
+            --md-sys-color-primary-container: #4f378b;
+            --md-sys-color-on-primary-container: #eaddff;
+            --md-sys-color-secondary: #ccc7d8;
+            --md-sys-color-tertiary: #efb8c8;
+            --md-sys-color-error: #f9dedc;
+            --md-sys-color-background: #1f1f1f;
+            --md-sys-color-surface: #1f1f1f;
+            --md-sys-color-outline: #79747e;
+            --team1-gradient: linear-gradient(135deg, #5b9cf5 0%, #284dd4 100%);
+            --team2-gradient: linear-gradient(135deg, #f28482 0%, #d32f2f 100%);
+        }
+
         * {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -21,12 +52,16 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            background-color: #000;
+            background-color: var(--md-sys-color-background);
+            color: #1f1f1f;
+        }
+
+        html.dark-mode body {
+            color: #f5f5f5;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: white;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -34,17 +69,26 @@
             position: fixed;
             top: 0;
             left: 0;
+            padding-top: max(0px, env(safe-area-inset-top));
+            padding-left: max(0px, env(safe-area-inset-left));
+            padding-right: max(0px, env(safe-area-inset-right));
         }
 
         .header {
-            background: #111;
+            background: var(--md-sys-color-surface);
             padding: 8px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #333;
-            min-height: 44px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+            min-height: 56px;
             gap: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        }
+
+        html.dark-mode .header {
+            border-bottom-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
         }
 
         .team-names {
@@ -58,25 +102,49 @@
         .team-name {
             flex: 1;
             text-align: center;
-            padding: 4px 8px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 4px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
             cursor: pointer;
             opacity: 0.7;
+            transition: all 0.2s;
+        }
+
+        html.dark-mode .team-name {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .team-name:active {
+            opacity: 1;
+            transform: scale(0.98);
         }
 
         .header-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
+            background: var(--md-sys-color-primary-container);
+            border: none;
+            color: var(--md-sys-color-on-primary-container);
+            padding: 6px 16px;
+            border-radius: 20px;
             font-size: 0.8rem;
             cursor: pointer;
             white-space: nowrap;
+            transition: all 0.2s;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        html.dark-mode .header-btn {
+            background: rgba(208, 188, 255, 0.12);
+            color: #d0bcff;
+        }
+
+        .header-btn:active {
+            opacity: 0.8;
+            transform: scale(0.96);
         }
 
         .container {
@@ -100,8 +168,8 @@
             border-right: none;
         }
 
-        #team1 { background: linear-gradient(135deg, #0d47a1 0%, #1a237e 100%); }
-        #team2 { background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%); }
+        #team1 { background: var(--team1-gradient); }
+        #team2 { background: var(--team2-gradient); }
 
         .team-section.scoring {
             transform: scale(1.02);
@@ -119,7 +187,7 @@
         }
 
         .sets-score { 
-            font-size: 2.5rem; 
+            font-size: 3.5rem; 
             font-weight: 900; 
             margin-bottom: 10px; 
             color: #ffeb3b;
@@ -127,14 +195,14 @@
         }
         
         .score-label { 
-            font-size: 0.9rem; 
+            font-size: 1rem; 
             text-transform: uppercase; 
             letter-spacing: 1px;
             opacity: 0.7;
         }
 
         .main-score { 
-            font-size: 5rem;
+            font-size: 6.5rem;
             font-weight: 900; 
             line-height: 1;
             margin: 8px 0;
@@ -167,37 +235,46 @@
         }
 
         .btn-small {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.25);
+            border: none;
             color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border-radius: 12px;
             font-size: 0.75rem;
             cursor: pointer;
-            min-width: 50px;
+            min-width: 56px;
+            min-height: 40px;
             active: none;
-            transition: all 0.1s;
+            transition: all 0.15s;
+            font-weight: 500;
         }
 
         .btn-small:active {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.4);
             transform: scale(0.95);
         }
 
         .controls {
-            height: 60px;
-            background: #111;
+            height: 70px;
+            background: var(--md-sys-color-surface);
             display: flex;
             justify-content: space-around;
             align-items: center;
             gap: 8px;
-            padding: 0 8px;
-            border-top: 1px solid #333;
+            padding: 8px max(8px, env(safe-area-inset-left)) 8px max(8px, env(safe-area-inset-right));
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
             flex-wrap: wrap;
+            box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.12);
+        }
+
+        html.dark-mode .controls {
+            border-top-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.3);
         }
 
         .reset-btn, .action-btn {
-            background: #2a2a2a;
+            background: var(--md-sys-color-primary);
             color: white;
             border: none;
             padding: 8px 14px;
@@ -212,19 +289,25 @@
 
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(0,0,0,0.9);
+            transform: translateX(-50%) translateY(120px);
+            background: #323232;
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
             z-index: 1000;
             opacity: 0;
             transition: all 0.3s ease;
             pointer-events: none;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        html.dark-mode .toast {
+            background: #2a2a2a;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
         }
 
         .toast.show {
@@ -239,10 +322,16 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.32);
             z-index: 2000;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal.show {
@@ -250,54 +339,97 @@
         }
 
         .modal-content {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 12px;
+            background: var(--md-sys-color-surface);
+            padding: 24px;
+            border-radius: 28px;
             max-width: 90%;
-            max-height: 80%;
+            min-width: 280px;
+            max-height: 80vh;
             overflow: auto;
-            border: 1px solid #333;
+            border: none;
+            box-shadow: 0 5px 16px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-content h3 {
+            color: var(--md-sys-color-primary);
+            margin-top: 0;
+        }
+
+        html.dark-mode .modal-content {
+            box-shadow: 0 5px 16px rgba(0, 0, 0, 0.5);
         }
 
         .modal-content input {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 12px 0;
+            background: var(--md-sys-color-primary-container);
+            border: 1px solid var(--md-sys-color-outline);
+            color: var(--md-sys-color-on-primary-container);
+            border-radius: 12px;
             font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        html.dark-mode .modal-content input {
+            background: rgba(208, 188, 255, 0.12);
+            border-color: #79747e;
+            color: #fff;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.12);
         }
 
         .modal-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 24px;
         }
 
         .modal-buttons button {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 1rem;
+            min-height: 44px;
+            transition: all 0.2s;
+        }
+
+        .modal-buttons button:active {
+            transform: scale(0.98);
         }
 
         .stats-panel {
             display: none;
             position: fixed;
-            top: 44px;
+            top: 56px;
             right: 0;
-            width: 200px;
-            max-height: calc(100% - 104px);
-            background: #1a1a1a;
-            border-left: 1px solid #333;
-            padding: 12px;
-            font-size: 0.8rem;
+            width: 280px;
+            max-height: calc(100% - 136px);
+            background: var(--md-sys-color-surface);
+            border-left: 1px solid rgba(0, 0, 0, 0.12);
+            padding: 16px;
+            font-size: 0.9rem;
             overflow-y: auto;
             z-index: 100;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15);
+        }
+
+        html.dark-mode .stats-panel {
+            border-left-color: rgba(255, 255, 255, 0.12);
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
         }
 
         .stats-panel.show {
@@ -307,12 +439,16 @@
         .stat-row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #333;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
 
-        .stat-label { opacity: 0.6; }
-        .stat-value { font-weight: bold; color: #ffeb3b; }
+        html.dark-mode .stat-row {
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-label { opacity: 0.6; font-weight: 500; }
+        .stat-value { font-weight: bold; color: var(--md-sys-color-primary); }
 
         .user-info {
             display: flex;
@@ -350,17 +486,41 @@
             font-size: 0.75rem;
         }
 
-        .login-btn:hover {
-            background: #1565c0;
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0 8px;
+            transition: all 0.2s;
         }
 
-        .logout-btn {
-            background: #c62828;
-            padding: 8px 12px;
+        .theme-toggle:active {
+            transform: scale(0.9);
         }
 
-        .logout-btn:hover {
-            background: #ad1457;
+        .gesture-hint {
+            position: fixed;
+            bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .gesture-hint.show {
+            opacity: 0.7;
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(0px, env(safe-area-inset-left));
+                padding-right: max(0px, env(safe-area-inset-right));
+                padding-top: max(0px, env(safe-area-inset-top));
+            }
         }
 
         .login-modal-content {
@@ -412,18 +572,161 @@
             margin: 5px 0 0 0 !important;
         }
 
+        /* Position Selector Panel */
+        .position-panel {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 200px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 12px;
+            z-index: 500;
+            min-width: 280px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .position-panel.show {
+            display: block;
+        }
+
+        .position-title {
+            font-weight: bold;
+            color: #1e88e5;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .position-btn {
+            padding: 8px 4px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            text-align: center;
+            line-height: 1.2;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .position-btn:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        .position-btn.active {
+            background: #1e88e5;
+            border-color: #1565c0;
+            box-shadow: 0 0 10px rgba(30, 136, 229, 0.5);
+        }
+
+        .position-label {
+            font-weight: bold;
+            font-size: 0.75rem;
+            display: block;
+        }
+
+        .position-sublabel {
+            font-size: 0.65rem;
+            opacity: 0.7;
+        }
+
+        .position-close {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .position-close button {
+            flex: 1;
+            padding: 6px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .position-stats {
+            font-size: 0.75rem;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .position-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            opacity: 0.8;
+        }
+
+        .position-toggle-btn {
+            background: #333 !important;
+            padding: 6px 10px !important;
+            font-size: 0.7rem !important;
+        }
+
+        .position-toggle-btn.active {
+            background: #1e88e5 !important;
+        }
+
+        @media (max-width: 768px) {
+            .position-panel {
+                right: 10px;
+                min-width: 240px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .position-panel {
+                bottom: auto;
+                top: 60px;
+                max-height: calc(100% - 140px);
+                overflow-y: auto;
+            }
+        }
+
         @media (orientation: landscape) {
-            .header { min-height: 40px; }
-            .controls { height: 50px; }
-            .main-score { font-size: 4rem; }
-            .sets-score { font-size: 2rem; }
+            .header { min-height: 48px; }
+            .controls { height: 60px; }
+            .main-score { font-size: 5rem; }
+            .sets-score { font-size: 2.5rem; }
+            .stats-panel { max-height: calc(100% - 108px); }
         }
 
         @media (max-height: 500px) {
-            .main-score { font-size: 3.5rem; }
-            .sets-score { font-size: 1.5rem; }
+            .main-score { font-size: 4rem; }
+            .sets-score { font-size: 2rem; }
             .adjust-bar { bottom: 8px; gap: 4px; }
-            .btn-small { padding: 6px 10px; }
+            .btn-small { padding: 6px 10px; min-width: 40px; }
+        }
+
+        @media (hover: hover) {
+            .header-btn:hover {
+                opacity: 0.9;
+            }
+            .btn-small:hover {
+                background: rgba(255,255,255,0.3);
+            }
+            .team-name:hover {
+                opacity: 0.8;
+            }
+        }
+
+        @media print {
+            body { display: none; }
         }
     </style>
 </head>
@@ -511,12 +814,123 @@
                     <span class="stat-value" id="curr_t2">0</span>
                 </div>
             </div>
+            <div style="border-bottom: 1px solid #444; margin-bottom: 8px; padding-bottom: 8px; margin-top: 8px;">
+                <div style="font-weight: bold; font-size: 0.75rem; color: #1e88e5; margin-bottom: 5px;">T1 Positions</div>
+                <div class="stat-row">
+                    <span class="stat-label">Front:</span>
+                    <span class="stat-value" id="pos_t1_front">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Back:</span>
+                    <span class="stat-value" id="pos_t1_back">0</span>
+                </div>
+            </div>
+            <div>
+                <div style="font-weight: bold; font-size: 0.75rem; color: #ff5252; margin-bottom: 5px;">T2 Positions</div>
+                <div class="stat-row">
+                    <span class="stat-label">Front:</span>
+                    <span class="stat-value" id="pos_t2_front">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Back:</span>
+                    <span class="stat-value" id="pos_t2_back">0</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="controls">
         <button class="action-btn" onclick="nextSet()">Next Set</button>
         <button class="action-btn" onclick="toggleStats()">📊</button>
+        <button class="action-btn position-toggle-btn" id="positionToggleBtn" onclick="togglePositionPanel()">📍 Pos</button>
+    </div>
+
+    <!-- Position Selector Panel for Team 1 -->
+    <div id="positionPanel1" class="position-panel">
+        <div class="position-title">Team 1 - Select Position</div>
+        <div class="position-grid">
+            <button class="position-btn" onclick="selectPosition(1, 'FB-L')">
+                <span class="position-label">LB</span>
+                <span class="position-sublabel">Back Left</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(1, 'FB-C')">
+                <span class="position-label">CB</span>
+                <span class="position-sublabel">Back Center</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(1, 'FB-R')">
+                <span class="position-label">RB</span>
+                <span class="position-sublabel">Back Right</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(1, 'FF-L')">
+                <span class="position-label">LF</span>
+                <span class="position-sublabel">Front Left</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(1, 'FF-C')">
+                <span class="position-label">CF</span>
+                <span class="position-sublabel">Front Center</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(1, 'FF-R')">
+                <span class="position-label">RF</span>
+                <span class="position-sublabel">Front Right</span>
+            </button>
+        </div>
+        <div class="position-stats">
+            <div class="position-stat-row">
+                <span>Pos Pts:</span>
+                <span id="posPts1">0</span>
+            </div>
+            <div class="position-stat-row">
+                <span>Selected:</span>
+                <span id="posSelected1" style="color: #ffeb3b;">None</span>
+            </div>
+        </div>
+        <div class="position-close">
+            <button onclick="togglePositionPanel()">Close</button>
+        </div>
+    </div>
+
+    <!-- Position Selector Panel for Team 2 -->
+    <div id="positionPanel2" class="position-panel">
+        <div class="position-title" style="color: #ff5252;">Team 2 - Select Position</div>
+        <div class="position-grid">
+            <button class="position-btn" onclick="selectPosition(2, 'FB-L')">
+                <span class="position-label">LB</span>
+                <span class="position-sublabel">Back Left</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(2, 'FB-C')">
+                <span class="position-label">CB</span>
+                <span class="position-sublabel">Back Center</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(2, 'FB-R')">
+                <span class="position-label">RB</span>
+                <span class="position-sublabel">Back Right</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(2, 'FF-L')">
+                <span class="position-label">LF</span>
+                <span class="position-sublabel">Front Left</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(2, 'FF-C')">
+                <span class="position-label">CF</span>
+                <span class="position-sublabel">Front Center</span>
+            </button>
+            <button class="position-btn" onclick="selectPosition(2, 'FF-R')">
+                <span class="position-label">RF</span>
+                <span class="position-sublabel">Front Right</span>
+            </button>
+        </div>
+        <div class="position-stats">
+            <div class="position-stat-row">
+                <span>Pos Pts:</span>
+                <span id="posPts2">0</span>
+            </div>
+            <div class="position-stat-row">
+                <span>Selected:</span>
+                <span id="posSelected2" style="color: #ffeb3b;">None</span>
+            </div>
+        </div>
+        <div class="position-close">
+            <button onclick="togglePositionPanel()">Close</button>
+        </div>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -644,10 +1058,33 @@
             team2Name: 'Team B',
             history: [],
             setHistory: [],
+            lastSetWinnerDeclaration: null,
             user: {
                 username: null,
                 email: null,
                 avatar: null
+            },
+            positions: {
+                team1: {
+                    'FB-L': 0,  // Back-Front Left
+                    'FB-C': 0,  // Back-Front Center
+                    'FB-R': 0,  // Back-Front Right
+                    'FF-L': 0,  // Front-Front Left
+                    'FF-C': 0,  // Front-Front Center
+                    'FF-R': 0   // Front-Front Right
+                },
+                team2: {
+                    'FB-L': 0,
+                    'FB-C': 0,
+                    'FB-R': 0,
+                    'FF-L': 0,
+                    'FF-C': 0,
+                    'FF-R': 0
+                }
+            },
+            selectedPosition: {
+                team1: null,
+                team2: null
             }
         };
 
@@ -760,12 +1197,91 @@
             }
         });
 
+        // ===== Position Tracking Functions =====
+        let currentTeamForPosition = null;
+
+        function togglePositionPanel() {
+            const panel1 = document.getElementById('positionPanel1');
+            const panel2 = document.getElementById('positionPanel2');
+            const isPanel1Shown = panel1.classList.contains('show');
+            
+            panel1.classList.remove('show');
+            panel2.classList.remove('show');
+            
+            if (!currentTeamForPosition || currentTeamForPosition === null) {
+                currentTeamForPosition = 1;
+                panel1.classList.add('show');
+            } else if (currentTeamForPosition === 1) {
+                currentTeamForPosition = 2;
+                panel2.classList.add('show');
+            } else {
+                currentTeamForPosition = null;
+            }
+        }
+
+        function selectPosition(teamNum, posCode) {
+            // Update selected position
+            matchState.selectedPosition[`team${teamNum}`] = posCode;
+            currentTeamForPosition = teamNum;
+            
+            // Update UI
+            updatePositionButtonStates(teamNum);
+            updatePositionStats(teamNum);
+            
+            showToast(`Team ${teamNum} - ${getPositionName(posCode)} selected`);
+        }
+
+        function updatePositionButtonStates(teamNum) {
+            const panelId = `positionPanel${teamNum}`;
+            const panel = document.getElementById(panelId);
+            const buttons = panel.querySelectorAll('.position-btn');
+            const selectedPos = matchState.selectedPosition[`team${teamNum}`];
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                const posCode = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+                if (posCode === selectedPos) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updatePositionStats(teamNum) {
+            const selectedPos = matchState.selectedPosition[`team${teamNum}`];
+            const pts = selectedPos ? matchState.positions[`team${teamNum}`][selectedPos] : 0;
+            
+            document.getElementById(`posPts${teamNum}`).innerText = pts;
+            document.getElementById(`posSelected${teamNum}`).innerText = selectedPos ? getPositionName(selectedPos) : 'None';
+        }
+
+        function getPositionName(posCode) {
+            const names = {
+                'FB-L': 'Back Left',
+                'FB-C': 'Back Center',
+                'FB-R': 'Back Right',
+                'FF-L': 'Front Left',
+                'FF-C': 'Front Center',
+                'FF-R': 'Front Right'
+            };
+            return names[posCode] || 'Unknown';
+        }
+
+        function recordPositionPoint(teamNum) {
+            const selectedPos = matchState.selectedPosition[`team${teamNum}`];
+            if (selectedPos) {
+                matchState.positions[`team${teamNum}`][selectedPos]++;
+                updatePositionStats(teamNum);
+            }
+        }
+
         // ===== Initialize =====
         window.addEventListener('load', () => {
             loadState();
             document.getElementById('name1').innerText = matchState.team1Name;
             document.getElementById('name2').innerText = matchState.team2Name;
             updateUserUI();
+            updatePositionButtonStates(1);
+            updatePositionButtonStates(2);
             updateStats();
             
             // Request fullscreen on mobile
@@ -808,6 +1324,7 @@
                 }, 200);
 
                 playSound('point');
+                recordPositionPoint(teamNum);
                 vibrate(50);
                 
                 checkSetWinner();
@@ -855,10 +1372,17 @@
         }
 
         function declareSetWinner(teamNum) {
+            // Prevent duplicate declarations
+            if (matchState.lastSetWinnerDeclaration === `${teamNum}-${matchState.sets1}-${matchState.sets2}`) {
+                return;
+            }
+            matchState.lastSetWinnerDeclaration = `${teamNum}-${matchState.sets1}-${matchState.sets2}`;
+
             const setsEl = document.getElementById(`sets${teamNum}`);
             const sets = parseInt(setsEl.innerText) + 1;
             setsEl.innerText = sets;
             matchState[`sets${teamNum}`] = sets;
+            updateDisplay(); // Update display immediately
 
             playSound('set');
             vibrate([100, 50, 100]);
@@ -879,13 +1403,22 @@
                 playSound('match');
                 vibrate([200, 100, 200, 100, 200]);
                 
-                setTimeout(() => {
-                    showToast(`🏆 ${teamName} wins the match!`, 5000);
-                }, 500);
+                showToast(`🏆 ${teamName} wins the match!`, 5000);
             } else {
                 const setNum = Math.max(matchState.sets1, matchState.sets2);
                 showToast(`🎉 ${teamName} wins Set ${setNum}!`);
-                setTimeout(() => nextSet(), 800);
+                // Auto-reset to next set after delay
+                setTimeout(() => {
+                    document.getElementById('pts1').innerText = 0;
+                    document.getElementById('pts2').innerText = 0;
+                    matchState.pts1 = 0;
+                    matchState.pts2 = 0;
+                    matchState.currentSetNumber++;
+                    matchState.lastSetWinnerDeclaration = null; // Reset for next set
+                    updateDisplay();
+                    saveState();
+                    showToast(`Set ${setNum + 1} started!`);
+                }, 1000);
             }
             
             saveState();
@@ -910,6 +1443,8 @@
         function fullReset() {
             if (confirm('Reset entire match?')) {
                 const currentUser = matchState.user;
+                const currentPositions = matchState.positions;
+                const currentSelectedPos = matchState.selectedPosition;
                 matchState = {
                     sets1: 0,
                     sets2: 0,
@@ -921,7 +1456,10 @@
                     team2Name: matchState.team2Name,
                     history: [],
                     setHistory: [],
-                    user: currentUser
+                    lastSetWinnerDeclaration: null,
+                    user: currentUser,
+                    positions: currentPositions,
+                    selectedPosition: currentSelectedPos
                 };
                 updateDisplay();
                 updateStats();
@@ -984,6 +1522,17 @@
             document.getElementById('t2_win').innerText = t2WinRate + '%';
             document.getElementById('curr_t1').innerText = matchState.pts1;
             document.getElementById('curr_t2').innerText = matchState.pts2;
+
+            // Calculate position statistics
+            const t1Front = matchState.positions.team1['FF-L'] + matchState.positions.team1['FF-C'] + matchState.positions.team1['FF-R'];
+            const t1Back = matchState.positions.team1['FB-L'] + matchState.positions.team1['FB-C'] + matchState.positions.team1['FB-R'];
+            const t2Front = matchState.positions.team2['FF-L'] + matchState.positions.team2['FF-C'] + matchState.positions.team2['FF-R'];
+            const t2Back = matchState.positions.team2['FB-L'] + matchState.positions.team2['FB-C'] + matchState.positions.team2['FB-R'];
+
+            document.getElementById('pos_t1_front').innerText = t1Front;
+            document.getElementById('pos_t1_back').innerText = t1Back;
+            document.getElementById('pos_t2_front').innerText = t2Front;
+            document.getElementById('pos_t2_back').innerText = t2Back;
         }
 
         function toggleStats() {

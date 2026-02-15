@@ -23,6 +23,8 @@ A mobile-first volleyball match scoring application with user authentication, re
 - Win rate calculations
 - Current set point display
 - Match history with set records
+- **Position-based scoring** (Front/Back row breakdown)
+- Player position performance tracking (6-position court)
 
 🎮 **Interface**
 - Responsive design for all devices
@@ -67,6 +69,68 @@ volleyball_scorer/
 - Audio context support (for sound effects)
 - Vibration API support (optional, for haptic feedback)
 
+### Android Mobile Setup
+
+#### Option 1: Using a Local Server (Recommended)
+1. **Share file via Local Network**:
+   - On Windows: Right-click `volleyball_score.html` → Properties → Share
+   - Or use a simple HTTP server: `python -m http.server 8000`
+   - Or use: `npx http-server`
+
+2. **Access on Android**:
+   - Find your computer's IP address (e.g., 192.168.1.100)
+   - On Android phone, open browser and go to: `http://192.168.1.100:8000/volleyball_score.html`
+   - Or directly: `http://192.168.1.100/volleyball_scorer/volleyball_score.html`
+
+#### Option 2: Using Chrome DevTools DevServer
+1. Connect Android phone via USB
+2. Enable Developer Options on Android (tap Build Number 7 times)
+3. Open Chrome on PC → DevTools → Remote Devices
+4. Forward port and access locally
+
+#### Option 3: Using a Cloud Service
+1. Upload `volleyball_score.html` to GitHub Pages, Firebase Hosting, or Vercel
+2. Share the public URL with your Android phone
+3. Open in browser on your phone
+
+#### Android Browser Recommendations
+- **Chrome** (Best): Best compatibility, all features work
+- **Firefox**: Full feature support
+- **Samsung Internet**: Good performance
+- **Edge**: Full compatibility
+
+#### Adding to Home Screen (Android)
+1. Open the URL in your browser
+2. Tap the **Menu** (⋮) button
+3. Select **"Add to Home screen"** or **"Install app"**
+4. App will appear as an icon on your home screen
+5. Launch like a native app for full-screen experience
+
+#### Tips for Mobile Use
+- **Fullscreen Mode**: Auto-activates on mobile (tap anywhere to keep it)
+- **Notch Support**: App respects safe areas for phones with notches
+- **Landscape Mode**: Rotate phone for wider scoring area
+- **Storage**: Data saves locally - works offline once loaded
+- **Battery Saver**: Use dark theme (already enabled)
+
+#### Android-Specific Features Working
+✅ Touch feedback (haptic vibration)  
+✅ Sound effects (volume controlled by device)  
+✅ Fullscreen mode  
+✅ localStorage (persistent data)  
+✅ Home screen shortcut  
+✅ Orientation changes  
+
+#### Troubleshooting on Android
+| Issue | Solution |
+|-------|----------|
+| Can't connect to local server | Ensure both devices on same WiFi network |
+| Static page won't load | Use a local HTTP server instead |
+| Vibration not working | Enable haptics in phone settings |
+| Sound not playing | Check volume is on and not muted |
+| Data not saving | Ensure localStorage is enabled in browser settings |
+| Page cuts off by notch | Update browser to latest version |
+
 ## Usage
 
 ### Team Management
@@ -87,10 +151,37 @@ volleyball_scorer/
    - Email: Valid email format required
 4. Click "Save" to complete login
 
+### Position Tracking (Player Position Performance) 🆕
+Track scoring by player position on the court:
+
+**Available Positions:**
+- **Front Row**: Front Left (LF), Front Center (CF), Front Right (RF)
+- **Back Row**: Back Left (LB), Back Center (CB), Back Right (RB)
+
+**How to Use:**
+1. Click the **"📍 Pos"** button in the controls
+2. Select the position that scored the point
+3. Click the position button before scoring (or right after)
+4. Position points are tracked automatically with each score
+5. View position statistics in the **Stats** panel
+
+**Position Statistics:**
+- Each team shows front/back row scoring breakdown
+- Total points by position and row tracked in match analytics
+- Use this data to analyze player and formation effectiveness
+
+**Example Workflow:**
+1. Match starts, click "📍 Pos" 
+2. Select "Front Center (CF)" 
+3. Now each point scored will be attributed to CF position
+4. Change position anytime before/after a point
+5. Stats show CF had 8 points, LF had 5 points, etc.
+
 ### Statistics
-- Click "Stats" to view match analytics
+- Click "📊" to view match analytics
 - Shows real-time updates
 - Includes points per set and win percentages
+- **NEW**: Position-based scoring breakdown (front/back row)
 
 ### Reset
 - Click "Reset" to clear match (preserves user and team names)
@@ -158,14 +249,17 @@ The app automatically adapts to:
 
 ## Future Enhancements
 
+- [x] Position-based scoring (Front/Back row tracking)
+- [ ] Individual player position heatmaps
 - [ ] Backend database for cloud storage
 - [ ] GitHub OAuth full implementation
 - [ ] Match history replay
-- [ ] Player statistics tracking
+- [ ] Advanced player statistics tracking
 - [ ] Tournament mode
 - [ ] Export match data (CSV, PDF)
 - [ ] Offline PWA support
 - [ ] Multi-language support
+- [ ] AI-powered analytics and recommendations
 
 ## Browser Support
 
