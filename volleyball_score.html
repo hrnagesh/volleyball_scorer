@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="true">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VB Match">
+    <meta name="theme-color" content="#000000">
+    <title>VB Match Tracker</title>
+    <style>
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .header {
+            background: #111;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            min-height: 44px;
+            gap: 8px;
+        }
+
+        .team-names {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.85rem;
+            gap: 10px;
+        }
+
+        .team-name {
+            flex: 1;
+            text-align: center;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .team-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-right: 1px solid #333;
+            transition: transform 0.2s;
+        }
+
+        .team-section:last-child {
+            border-right: none;
+        }
+
+        #team1 { background: linear-gradient(135deg, #0d47a1 0%, #1a237e 100%); }
+        #team2 { background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%); }
+
+        .team-section.scoring {
+            transform: scale(1.02);
+        }
+
+        .team-info {
+            text-align: center;
+        }
+
+        .team-label { 
+            font-size: 0.75rem; 
+            opacity: 0.6; 
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+
+        .sets-score { 
+            font-size: 2.5rem; 
+            font-weight: 900; 
+            margin-bottom: 10px; 
+            color: #ffeb3b;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .score-label { 
+            font-size: 0.9rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .main-score { 
+            font-size: 5rem;
+            font-weight: 900; 
+            line-height: 1;
+            margin: 8px 0;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+            animation: scoreChange 0.3s ease-out;
+        }
+
+        @keyframes scoreChange {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .tap-zone {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 120px;
+            z-index: 1;
+            cursor: pointer;
+            active: none;
+        }
+
+        .adjust-bar {
+            position: absolute;
+            bottom: 12px;
+            display: flex;
+            gap: 8px;
+            z-index: 2;
+            width: 90%;
+            justify-content: center;
+        }
+
+        .btn-small {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            min-width: 50px;
+            active: none;
+            transition: all 0.1s;
+        }
+
+        .btn-small:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.95);
+        }
+
+        .controls {
+            height: 60px;
+            background: #111;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 8px;
+            padding: 0 8px;
+            border-top: 1px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .reset-btn, .action-btn {
+            background: #2a2a2a;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:active { background: #3a3a3a; transform: scale(0.95); }
+        .reset-btn.danger { background: #c62828; }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow: auto;
+            border: 1px solid #333;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stats-panel {
+            display: none;
+            position: fixed;
+            top: 44px;
+            right: 0;
+            width: 200px;
+            max-height: calc(100% - 104px);
+            background: #1a1a1a;
+            border-left: 1px solid #333;
+            padding: 12px;
+            font-size: 0.8rem;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .stats-panel.show {
+            display: block;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .stat-label { opacity: 0.6; }
+        .stat-value { font-weight: bold; color: #ffeb3b; }
+
+        @media (orientation: landscape) {
+            .header { min-height: 40px; }
+            .controls { height: 50px; }
+            .main-score { font-size: 4rem; }
+            .sets-score { font-size: 2rem; }
+        }
+
+        @media (max-height: 500px) {
+            .main-score { font-size: 3.5rem; }
+            .sets-score { font-size: 1.5rem; }
+            .adjust-bar { bottom: 8px; gap: 4px; }
+            .btn-small { padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="team-names">
+            <div class="team-name" onclick="editTeamName(1)" id="name1">Team A</div>
+            <div class="team-name" onclick="editTeamName(2)" id="name2">Team B</div>
+        </div>
+        <button class="header-btn" onclick="toggleStats()">Stats</button>
+        <button class="header-btn danger" onclick="fullReset()" style="background: #c62828;">Reset</button>
+    </div>
+
+    <div class="container">
+        <div id="team1" class="team-section">
+            <div class="tap-zone" onclick="changeValue('pts1', 1)"></div>
+            <div class="team-info">
+                <div class="team-label">SETS</div>
+                <div id="sets1" class="sets-score">0</div>
+                <div class="score-label">Points</div>
+                <div id="pts1" class="main-score">0</div>
+            </div>
+            
+            <div class="adjust-bar">
+                <button class="btn-small" onclick="changeValue('pts1', -1)">-1</button>
+                <button class="btn-small" onclick="changeValue('sets1', 1)">+Set</button>
+                <button class="btn-small" onclick="undo(1)">Undo</button>
+            </div>
+        </div>
+
+        <div id="team2" class="team-section">
+            <div class="tap-zone" onclick="changeValue('pts2', 1)"></div>
+            <div class="team-info">
+                <div class="team-label">SETS</div>
+                <div id="sets2" class="sets-score">0</div>
+                <div class="score-label">Points</div>
+                <div id="pts2" class="main-score">0</div>
+            </div>
+            
+            <div class="adjust-bar">
+                <button class="btn-small" onclick="changeValue('pts2', -1)">-1</button>
+                <button class="btn-small" onclick="changeValue('sets2', 1)">+Set</button>
+                <button class="btn-small" onclick="undo(2)">Undo</button>
+            </div>
+        </div>
+
+        <div id="statsPanel" class="stats-panel">
+            <div style="font-weight: bold; margin-bottom: 10px;">Match Stats</div>
+            <div style="border-bottom: 1px solid #444; margin-bottom: 8px; padding-bottom: 8px;">
+                <div class="stat-row">
+                    <span class="stat-label">T1 Pts/Set</span>
+                    <span class="stat-value" id="t1_pps">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">T2 Pts/Set</span>
+                    <span class="stat-value" id="t2_pps">0</span>
+                </div>
+            </div>
+            <div style="border-bottom: 1px solid #444; margin-bottom: 8px; padding-bottom: 8px;">
+                <div class="stat-row">
+                    <span class="stat-label">T1 Win %</span>
+                    <span class="stat-value" id="t1_win">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">T2 Win %</span>
+                    <span class="stat-value" id="t2_win">0%</span>
+                </div>
+            </div>
+            <div>
+                <div class="stat-row">
+                    <span class="stat-label">Curr Set Pts</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">T1</span>
+                    <span class="stat-value" id="curr_t1">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">T2</span>
+                    <span class="stat-value" id="curr_t2">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="action-btn" onclick="nextSet()">Next Set</button>
+        <button class="action-btn" onclick="toggleStats()">📊</button>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="nameModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Edit Team Name</h3>
+            <input type="text" id="nameInput" placeholder="Enter team name" maxlength="15">
+            <div class="modal-buttons">
+                <button style="background: #2a2a2a;" onclick="cancelNameEdit()">Cancel</button>
+                <button style="background: #1976d2;" onclick="saveTeamName()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== Audio Context =====
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (!navigator.onLine) return; // Skip if offline
+            try {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                switch(type) {
+                    case 'point':
+                        osc.frequency.value = 800;
+                        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                        osc.start(audioContext.currentTime);
+                        osc.stop(audioContext.currentTime + 0.1);
+                        break;
+                    case 'set':
+                        osc.frequency.value = 1200;
+                        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        osc.start(audioContext.currentTime);
+                        osc.stop(audioContext.currentTime + 0.3);
+                        break;
+                    case 'match':
+                        for(let i = 0; i < 3; i++) {
+                            const o = audioContext.createOscillator();
+                            const g = audioContext.createGain();
+                            o.connect(g);
+                            g.connect(audioContext.destination);
+                            o.frequency.value = 1000 + (i * 300);
+                            g.gain.setValueAtTime(0.1, audioContext.currentTime + i*0.15);
+                            g.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i*0.15 + 0.2);
+                            o.start(audioContext.currentTime + i*0.15);
+                            o.stop(audioContext.currentTime + i*0.15 + 0.2);
+                        }
+                        break;
+                }
+            } catch(e) {}
+        }
+
+        // ===== Haptic Feedback =====
+        function vibrate(pattern) {
+            if (navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        // ===== Toast Notifications =====
+        function showToast(message, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // ===== Local Storage =====
+        function saveState() {
+            localStorage.setItem('vbMatch', JSON.stringify(matchState));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('vbMatch');
+            if (saved) {
+                matchState = JSON.parse(saved);
+                updateDisplay();
+            }
+        }
+
+        // ===== Match State =====
+        let matchState = {
+            sets1: 0,
+            sets2: 0,
+            pts1: 0,
+            pts2: 0,
+            matchOver: false,
+            currentSetNumber: 1,
+            team1Name: 'Team A',
+            team2Name: 'Team B',
+            history: [],
+            setHistory: []
+        };
+
+        const REGULAR_SET_WIN = 25;
+        const FINAL_SET_WIN = 15;
+        const MIN_LEAD = 2;
+
+        // ===== Initialize =====
+        window.addEventListener('load', () => {
+            loadState();
+            document.getElementById('name1').innerText = matchState.team1Name;
+            document.getElementById('name2').innerText = matchState.team2Name;
+            updateStats();
+            
+            // Request fullscreen on mobile
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        });
+
+        // ===== Core Game Logic =====
+        function changeValue(id, delta) {
+            if (matchState.matchOver && delta > 0) {
+                showToast('Match over! Reset to start new match.');
+                return;
+            }
+
+            const el = document.getElementById(id);
+            let val = parseInt(el.innerText);
+            const newVal = val + delta;
+
+            if (newVal >= 0) {
+                // Save to history
+                const teamNum = id === 'pts1' ? 1 : 2;
+                matchState.history.push({
+                    type: 'point',
+                    team: teamNum,
+                    value: delta,
+                    sets1: matchState.sets1,
+                    sets2: matchState.sets2,
+                    pts1: matchState.pts1,
+                    pts2: matchState.pts2
+                });
+
+                el.innerText = newVal;
+                matchState[id] = newVal;
+                
+                // Visual feedback
+                document.getElementById(`team${teamNum}`).classList.add('scoring');
+                setTimeout(() => {
+                    document.getElementById(`team${teamNum}`).classList.remove('scoring');
+                }, 200);
+
+                playSound('point');
+                vibrate(50);
+                
+                checkSetWinner();
+                updateStats();
+                saveState();
+            }
+        }
+
+        function undo(teamNum) {
+            if (matchState.history.length === 0) {
+                showToast('Nothing to undo');
+                return;
+            }
+
+            const lastAction = matchState.history.pop();
+            matchState.sets1 = lastAction.sets1;
+            matchState.sets2 = lastAction.sets2;
+            matchState.pts1 = lastAction.pts1;
+            matchState.pts2 = lastAction.pts2;
+            matchState.matchOver = false;
+            
+            updateDisplay();
+            showToast('Point undone');
+            saveState();
+        }
+
+        function updateDisplay() {
+            document.getElementById('sets1').innerText = matchState.sets1;
+            document.getElementById('sets2').innerText = matchState.sets2;
+            document.getElementById('pts1').innerText = matchState.pts1;
+            document.getElementById('pts2').innerText = matchState.pts2;
+        }
+
+        function checkSetWinner() {
+            const pts1 = matchState.pts1;
+            const pts2 = matchState.pts2;
+            const isFinalSet = matchState.sets1 === 2 && matchState.sets2 === 2;
+            const winningPoints = isFinalSet ? FINAL_SET_WIN : REGULAR_SET_WIN;
+
+            if (pts1 >= winningPoints && pts1 - pts2 >= MIN_LEAD) {
+                declareSetWinner(1);
+            } else if (pts2 >= winningPoints && pts2 - pts1 >= MIN_LEAD) {
+                declareSetWinner(2);
+            }
+        }
+
+        function declareSetWinner(teamNum) {
+            const setsEl = document.getElementById(`sets${teamNum}`);
+            const sets = parseInt(setsEl.innerText) + 1;
+            setsEl.innerText = sets;
+            matchState[`sets${teamNum}`] = sets;
+
+            playSound('set');
+            vibrate([100, 50, 100]);
+            
+            // Get team name
+            const teamName = teamNum === 1 ? matchState.team1Name : matchState.team2Name;
+            
+            // Save set statistics
+            matchState.setHistory.push({
+                winner: teamNum,
+                set: Math.max(matchState.sets1, matchState.sets2),
+                t1pts: matchState.pts1,
+                t2pts: matchState.pts2
+            });
+
+            if (sets === 3) {
+                matchState.matchOver = true;
+                playSound('match');
+                vibrate([200, 100, 200, 100, 200]);
+                
+                setTimeout(() => {
+                    showToast(`🏆 ${teamName} wins the match!`, 5000);
+                }, 500);
+            } else {
+                const setNum = Math.max(matchState.sets1, matchState.sets2);
+                showToast(`🎉 ${teamName} wins Set ${setNum}!`);
+                setTimeout(() => nextSet(), 800);
+            }
+            
+            saveState();
+        }
+
+        function nextSet() {
+            const currentSets1 = parseInt(document.getElementById('sets1').innerText);
+            const currentSets2 = parseInt(document.getElementById('sets2').innerText);
+
+            if (currentSets1 < 3 && currentSets2 < 3) {
+                const nextSetNum = Math.max(currentSets1, currentSets2) + 2;
+                document.getElementById('pts1').innerText = 0;
+                document.getElementById('pts2').innerText = 0;
+                matchState.pts1 = 0;
+                matchState.pts2 = 0;
+                matchState.currentSetNumber++;
+                showToast(`Set ${nextSetNum} started`);
+                saveState();
+            }
+        }
+
+        function fullReset() {
+            if (confirm('Reset entire match?')) {
+                matchState = {
+                    sets1: 0,
+                    sets2: 0,
+                    pts1: 0,
+                    pts2: 0,
+                    matchOver: false,
+                    currentSetNumber: 1,
+                    team1Name: matchState.team1Name,
+                    team2Name: matchState.team2Name,
+                    history: [],
+                    setHistory: []
+                };
+                updateDisplay();
+                updateStats();
+                showToast('Match reset');
+                saveState();
+            }
+        }
+
+        // ===== Team Names =====
+        let editingTeam = null;
+
+        function editTeamName(teamNum) {
+            editingTeam = teamNum;
+            const currentName = teamNum === 1 ? matchState.team1Name : matchState.team2Name;
+            document.getElementById('modalTitle').innerText = `Edit Team ${teamNum} Name`;
+            document.getElementById('nameInput').value = currentName;
+            document.getElementById('nameModal').classList.add('show');
+            document.getElementById('nameInput').focus();
+        }
+
+        function saveTeamName() {
+            const newName = document.getElementById('nameInput').value.trim() || `Team ${editingTeam === 1 ? 'A' : 'B'}`;
+            if (editingTeam === 1) {
+                matchState.team1Name = newName;
+                document.getElementById('name1').innerText = newName;
+            } else {
+                matchState.team2Name = newName;
+                document.getElementById('name2').innerText = newName;
+            }
+            document.getElementById('nameModal').classList.remove('show');
+            saveState();
+            showToast('Team name updated');
+        }
+
+        function cancelNameEdit() {
+            document.getElementById('nameModal').classList.remove('show');
+        }
+
+        document.getElementById('nameInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') saveTeamName();
+        });
+
+        // ===== Statistics =====
+        function updateStats() {
+            const totalSets = matchState.sets1 + matchState.sets2;
+            const t1AvgPts = totalSets > 0 ? (matchState.setHistory
+                .filter(s => s.winner === 1)
+                .reduce((sum, s) => sum + s.t1pts, 0) / Math.max(matchState.sets1, 1)).toFixed(1) : 0;
+            
+            const t2AvgPts = totalSets > 0 ? (matchState.setHistory
+                .filter(s => s.winner === 2)
+                .reduce((sum, s) => sum + s.t2pts, 0) / Math.max(matchState.sets2, 1)).toFixed(1) : 0;
+
+            const t1WinRate = totalSets > 0 ? Math.round((matchState.sets1 / totalSets) * 100) : 0;
+            const t2WinRate = totalSets > 0 ? Math.round((matchState.sets2 / totalSets) * 100) : 0;
+
+            document.getElementById('t1_pps').innerText = t1AvgPts;
+            document.getElementById('t2_pps').innerText = t2AvgPts;
+            document.getElementById('t1_win').innerText = t1WinRate + '%';
+            document.getElementById('t2_win').innerText = t2WinRate + '%';
+            document.getElementById('curr_t1').innerText = matchState.pts1;
+            document.getElementById('curr_t2').innerText = matchState.pts2;
+        }
+
+        function toggleStats() {
+            document.getElementById('statsPanel').classList.toggle('show');
+            updateStats();
+        }
+
+        // ===== Keyboard Shortcuts =====
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('nameModal').classList.contains('show')) return;
+            
+            switch(e.key) {
+                case '1': changeValue('pts1', 1); break;
+                case '2': changeValue('pts2', 1); break;
+                case 'z': case 'Z': undo(1); break;
+                case 'x': case 'X': undo(2); break;
+                case ' ': nextSet(); e.preventDefault(); break;
+                case 'r': case 'R': fullReset(); break;
+            }
+        });
+
+        // ===== App Badge =====
+        if ('setAppBadge' in navigator) {
+            function updateBadge() {
+                const sets1 = parseInt(document.getElementById('sets1').innerText);
+                const sets2 = parseInt(document.getElementById('sets2').innerText);
+                navigator.setAppBadge(sets1 + sets2);
+            }
+            document.addEventListener('points-changed', updateBadge);
+        }
+    </script>
+</body>
+</html>
