@@ -314,6 +314,104 @@
         .stat-label { opacity: 0.6; }
         .stat-value { font-weight: bold; color: #ffeb3b; }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-name {
+            opacity: 0.8;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .login-btn {
+            background: #1e88e5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .login-btn:hover {
+            background: #1565c0;
+        }
+
+        .logout-btn {
+            background: #c62828;
+            padding: 8px 12px;
+        }
+
+        .logout-btn:hover {
+            background: #ad1457;
+        }
+
+        .login-modal-content {
+            text-align: center;
+            min-width: 300px;
+        }
+
+        .login-modal-content h3 {
+            margin-top: 0;
+            color: #1e88e5;
+        }
+
+        .github-login-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 15px 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .github-login-btn:hover {
+            background: #444;
+            border-color: #666;
+        }
+
+        .input-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .input-group input {
+            width: 100% !important;
+            margin: 5px 0 0 0 !important;
+        }
+
         @media (orientation: landscape) {
             .header { min-height: 40px; }
             .controls { height: 50px; }
@@ -335,6 +433,12 @@
             <div class="team-name" onclick="editTeamName(1)" id="name1">Team A</div>
             <div class="team-name" onclick="editTeamName(2)" id="name2">Team B</div>
         </div>
+        <div id="userInfoContainer" class="user-info" style="display: none;">
+            <div class="user-avatar" id="userAvatar">A</div>
+            <div class="user-name" id="userName">User</div>
+            <button class="header-btn logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <button id="loginBtnHeader" class="header-btn login-btn" onclick="openLoginModal()" style="display: none;">Login</button>
         <button class="header-btn" onclick="toggleStats()">Stats</button>
         <button class="header-btn danger" onclick="fullReset()" style="background: #c62828;">Reset</button>
     </div>
@@ -428,6 +532,32 @@
         </div>
     </div>
 
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-modal-content">
+            <h3>GitHub Login</h3>
+            <p style="opacity: 0.7; margin-bottom: 20px;">Login with your GitHub account to track matches</p>
+            <button class="github-login-btn" onclick="initiateGitHubLogin()">
+                <span>🔗</span>
+                <span>Login with GitHub</span>
+            </button>
+            <div style="border-top: 1px solid #333; padding-top: 15px; margin-top: 15px;">
+                <p style="font-size: 0.85rem; opacity: 0.6; margin: 10px 0;">Or enter manually:</p>
+                <div class="input-group">
+                    <label for="manualUsername">Username:</label>
+                    <input type="text" id="manualUsername" placeholder="Enter username" maxlength="50">
+                </div>
+                <div class="input-group">
+                    <label for="manualEmail">Email:</label>
+                    <input type="email" id="manualEmail" placeholder="Enter email address">
+                </div>
+            </div>
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button style="background: #2a2a2a;" onclick="closeLoginModal()">Cancel</button>
+                <button style="background: #1e88e5;" onclick="saveManualLogin()">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ===== Audio Context =====
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -513,18 +643,129 @@
             team1Name: 'Team A',
             team2Name: 'Team B',
             history: [],
-            setHistory: []
+            setHistory: [],
+            user: {
+                username: null,
+                email: null,
+                avatar: null
+            }
         };
 
         const REGULAR_SET_WIN = 25;
         const FINAL_SET_WIN = 15;
         const MIN_LEAD = 2;
 
+        // ===== GitHub Login Functions =====
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.add('show');
+            document.getElementById('manualUsername').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('show');
+        }
+
+        function initiateGitHubLogin() {
+            // GitHub OAuth configuration
+            const clientId = 'YOUR_GITHUB_CLIENT_ID';
+            const redirectUri = window.location.origin + window.location.pathname;
+            const scope = 'user:email';
+            const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+            
+            // For now, show a message (requires backend setup for full OAuth)
+            showToast('GitHub login requires backend setup. Use manual login instead.');
+            
+            // Uncomment when backend is ready:
+            // window.location.href = authUrl;
+        }
+
+        function saveManualLogin() {
+            const username = document.getElementById('manualUsername').value.trim();
+            const email = document.getElementById('manualEmail').value.trim();
+
+            // Validation
+            if (!username) {
+                showToast('Please enter a username');
+                return;
+            }
+            
+            if (!email) {
+                showToast('Please enter an email');
+                return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('Please enter a valid email address');
+                return;
+            }
+
+            // Username validation (alphanumeric, dash, underscore only)
+            const usernameRegex = /^[a-zA-Z0-9_-]{3,50}$/;
+            if (!usernameRegex.test(username)) {
+                showToast('Username must be 3-50 characters (letters, numbers, dash, underscore)');
+                return;
+            }
+
+            // Save user info
+            matchState.user = {
+                username: username,
+                email: email,
+                avatar: username.charAt(0).toUpperCase()
+            };
+
+            updateUserUI();
+            closeLoginModal();
+            saveState();
+            showToast(`Welcome, ${username}! 🎉`);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                matchState.user = {
+                    username: null,
+                    email: null,
+                    avatar: null
+                };
+                updateUserUI();
+                saveState();
+                showToast('Logged out successfully');
+            }
+        }
+
+        function updateUserUI() {
+            const userInfoContainer = document.getElementById('userInfoContainer');
+            const loginBtnHeader = document.getElementById('loginBtnHeader');
+
+            if (matchState.user.username) {
+                // User is logged in
+                document.getElementById('userAvatar').innerText = matchState.user.avatar || 'U';
+                document.getElementById('userName').innerText = matchState.user.username;
+                userInfoContainer.style.display = 'flex';
+                loginBtnHeader.style.display = 'none';
+            } else {
+                // User is not logged in
+                userInfoContainer.style.display = 'none';
+                loginBtnHeader.style.display = 'block';
+            }
+        }
+
+        // Listen for Enter key in login modal
+        document.addEventListener('keypress', (e) => {
+            if (document.getElementById('loginModal').classList.contains('show')) {
+                if (e.key === 'Enter' && (document.activeElement.id === 'manualUsername' || document.activeElement.id === 'manualEmail')) {
+                    saveManualLogin();
+                }
+            }
+        });
+
         // ===== Initialize =====
         window.addEventListener('load', () => {
             loadState();
             document.getElementById('name1').innerText = matchState.team1Name;
             document.getElementById('name2').innerText = matchState.team2Name;
+            updateUserUI();
             updateStats();
             
             // Request fullscreen on mobile
@@ -668,6 +909,7 @@
 
         function fullReset() {
             if (confirm('Reset entire match?')) {
+                const currentUser = matchState.user;
                 matchState = {
                     sets1: 0,
                     sets2: 0,
@@ -678,7 +920,8 @@
                     team1Name: matchState.team1Name,
                     team2Name: matchState.team2Name,
                     history: [],
-                    setHistory: []
+                    setHistory: [],
+                    user: currentUser
                 };
                 updateDisplay();
                 updateStats();
