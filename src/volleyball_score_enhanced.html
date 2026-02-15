@@ -507,6 +507,50 @@
             opacity: 1;
         }
 
+        /* Performance Graphs */
+        .chart-container {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1e88e5;
+            font-size: 0.9rem;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            background: #1a1a1a;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .side-panel {
@@ -558,6 +602,7 @@
         <button class="header-btn" onclick="openStatsPanel()">📊</button>
         <button class="header-btn" onclick="openPlayersModal()">👥</button>
         <button class="header-btn" onclick="openHistoryPanel()">📜</button>
+        <button class="header-btn" onclick="openGraphsModal()">📈</button>
         <button class="header-btn" onclick="openSettingsModal()">⚙️</button>
         <button class="header-btn" onclick="resetMatch()" style="color: #ff6b6b;">Reset</button>
     </div>
@@ -735,6 +780,69 @@
             </div>
             <div class="button-group" style="margin-top: 15px;">
                 <button class="btn btn-secondary" onclick="closeModal('playersModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Graphs Modal -->
+    <div id="graphsModal" class="modal">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+            <div class="modal-header">Performance Graphs 📈</div>
+            <div style="max-height: 70vh; overflow-y: auto;">
+                <div class="chart-container">
+                    <div class="chart-title">Point Progression</div>
+                    <canvas id="pointTrendChart" width="400" height="250"></canvas>
+                    <div class="chart-legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #1e88e5;"></div><span>Team A</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #ff6b6b;"></div><span>Team B</span></div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Set-by-Set Scores</div>
+                    <canvas id="setScoresChart" width="400" height="250"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Position Breakdown - Team A</div>
+                    <canvas id="positionChart1" width="400" height="250"></canvas>
+                    <div class="chart-legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #1e88e5;"></div><span>LF</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #42a5f5;"></div><span>CF</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #90caf9;"></div><span>RF</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #1565c0;"></div><span>LB</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #0d47a1;"></div><span>CB</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #1976d2;"></div><span>RB</span></div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Position Breakdown - Team B</div>
+                    <canvas id="positionChart2" width="400" height="250"></canvas>
+                    <div class="chart-legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #ff6b6b;"></div><span>LF</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #ef5350;"></div><span>CF</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #e53935;"></div><span>RF</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #c62828;"></div><span>LB</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #b71c1c;"></div><span>CB</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #a71a1a;"></div><span>RB</span></div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Front vs Back Row Performance</div>
+                    <canvas id="frontBackChart" width="400" height="250"></canvas>
+                    <div class="chart-legend">
+                        <div class="legend-item"><div class="legend-color" style="background: #1e88e5;"></div><span>Team A Front</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #42a5f5;"></div><span>Team A Back</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #ff6b6b;"></div><span>Team B Front</span></div>
+                        <div class="legend-item"><div class="legend-color" style="background: #ef5350;"></div><span>Team B Back</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="button-group" style="margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeModal('graphsModal')">Close</button>
+                <button class="btn btn-primary" onclick="refreshGraphs()">Refresh Graphs</button>
             </div>
         </div>
     </div>
@@ -932,6 +1040,15 @@
             showToast(`🎉 ${matchState[`team${teamNum}Name`]} wins Set ${setNum}!`);
             playSound('set');
             vibrate([100, 50, 100]);
+
+            // Record set to history for graphs
+            matchState.setHistory.push({
+                setNumber: setNum + 1,
+                pts1: matchState.pts1,
+                pts2: matchState.pts2,
+                winner: teamNum,
+                timestamp: new Date()
+            });
 
             matchState[`sets${teamNum}`]++;
             if (matchState[`sets${teamNum}`] === 3) {
@@ -1186,6 +1303,271 @@
             closeModal('settingsModal');
             saveToLocalStorage();
             showToast('Settings saved!');
+        }
+
+        // ===== Performance Graphs =====
+        function openGraphsModal() {
+            document.getElementById('graphsModal').classList.add('show');
+            setTimeout(() => refreshGraphs(), 100);
+        }
+
+        function refreshGraphs() {
+            drawPointTrendChart();
+            drawSetScoresChart();
+            drawPositionChart(1);
+            drawPositionChart(2);
+            drawFrontBackChart();
+        }
+
+        function drawPointTrendChart() {
+            const canvas = document.getElementById('pointTrendChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Get match data
+            const history = matchState.actionHistory;
+            const data1 = [];
+            const data2 = [];
+            let pts1 = 0, pts2 = 0;
+            
+            history.forEach(item => {
+                if (item.state) {
+                    data1.push(item.state.pts1);
+                    data2.push(item.state.pts2);
+                }
+            });
+            
+            if (data1.length === 0) {
+                data1.push(0);
+                data2.push(0);
+            }
+            
+            drawLineChart(ctx, data1, data2, width, height, '#1e88e5', '#ff6b6b');
+            
+            // Draw axes
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(40, 20);
+            ctx.lineTo(40, height - 30);
+            ctx.lineTo(width - 10, height - 30);
+            ctx.stroke();
+            
+            // Labels
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Points', width / 2, height - 5);
+            ctx.textAlign = 'left';
+            ctx.save();
+            ctx.translate(10, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Progression', 0, 0);
+            ctx.restore();
+        }
+
+        function drawLineChart(ctx, data1, data2, width, height, color1, color2) {
+            const padding = { left: 40, right: 10, top: 20, bottom: 30 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            
+            const max = Math.max(...data1, ...data2) || 25;
+            const xStep = chartWidth / (Math.max(data1.length, data2.length) - 1 || 1);
+            const yScale = chartHeight / max;
+            
+            // Draw grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 4; i++) {
+                const y = padding.top + (chartHeight / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+            }
+            
+            // Draw lines
+            [
+                { data: data1, color: color1 },
+                { data: data2, color: color2 }
+            ].forEach(series => {
+                ctx.strokeStyle = series.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                series.data.forEach((point, idx) => {
+                    const x = padding.left + (idx * xStep);
+                    const y = padding.top + chartHeight - (point * yScale);
+                    
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+                
+                // Draw points
+                ctx.fillStyle = series.color;
+                series.data.forEach((point, idx) => {
+                    const x = padding.left + (idx * xStep);
+                    const y = padding.top + chartHeight - (point * yScale);
+                    ctx.fillRect(x - 3, y - 3, 6, 6);
+                });
+            });
+        }
+
+        function drawSetScoresChart() {
+            const canvas = document.getElementById('setScoresChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, width, height);
+            
+            const sets = 5; // Max 5 sets
+            const padding = { left: 40, right: 10, top: 20, bottom: 30 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const barWidth = chartWidth / (sets * 2.5);
+            
+            // Draw axes
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, height - padding.bottom);
+            ctx.lineTo(width - padding.right, height - padding.bottom);
+            ctx.stroke();
+            
+            // Draw bars
+            for (let s = 0; s < sets; s++) {
+                const x1 = padding.left + (s * barWidth * 2.5) + 10;
+                const x2 = x1 + barWidth;
+                
+                const pts1 = matchState.setHistory[s]?.pts1 || 0;
+                const pts2 = matchState.setHistory[s]?.pts2 || 0;
+                const maxPts = Math.max(pts1, pts2) || 25;
+                
+                const y1 = height - padding.bottom - (pts1 / maxPts * chartHeight);
+                const y2 = height - padding.bottom - (pts2 / maxPts * chartHeight);
+                
+                // Team 1 bar
+                ctx.fillStyle = '#1e88e5';
+                ctx.fillRect(x1, y1, barWidth - 3, height - padding.bottom - y1);
+                
+                // Team 2 bar
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillRect(x2, y2, barWidth - 3, height - padding.bottom - y2);
+                
+                // Labels
+                ctx.fillStyle = '#888';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('S' + (s + 1), x1 + barWidth, height - padding.bottom + 15);
+            }
+        }
+
+        function drawPositionChart(team) {
+            const canvas = document.getElementById(`positionChart${team}`);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, width, height);
+            
+            const positions = ['FF-L', 'FF-C', 'FF-R', 'FB-L', 'FB-C', 'FB-R'];
+            const colors = team === 1 
+                ? ['#1e88e5', '#42a5f5', '#90caf9', '#1565c0', '#0d47a1', '#1976d2']
+                : ['#ff6b6b', '#ef5350', '#e53935', '#c62828', '#b71c1c', '#a71a1a'];
+            
+            const data = positions.map(pos => matchState.positions[team][pos] || 0);
+            const max = Math.max(...data) || 10;
+            
+            const padding = { left: 40, right: 10, top: 20, bottom: 30 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const barWidth = chartWidth / (positions.length * 1.5);
+            
+            // Draw bars
+            data.forEach((value, idx) => {
+                const x = padding.left + (idx * barWidth * 1.5);
+                const barHeight = (value / max) * chartHeight;
+                const y = height - padding.bottom - barHeight;
+                
+                ctx.fillStyle = colors[idx];
+                ctx.fillRect(x, y, barWidth - 4, barHeight);
+                
+                // Labels
+                ctx.fillStyle = '#888';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(positions[idx], x + barWidth / 2, height - padding.bottom + 15);
+                
+                // Value
+                ctx.fillStyle = '#eee';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText(value, x + barWidth / 2, y - 5);
+            });
+        }
+
+        function drawFrontBackChart() {
+            const canvas = document.getElementById('frontBackChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Calculate front/back totals
+            const t1Front = matchState.positions[1]['FF-L'] + matchState.positions[1]['FF-C'] + matchState.positions[1]['FF-R'];
+            const t1Back = matchState.positions[1]['FB-L'] + matchState.positions[1]['FB-C'] + matchState.positions[1]['FB-R'];
+            const t2Front = matchState.positions[2]['FF-L'] + matchState.positions[2]['FF-C'] + matchState.positions[2]['FF-R'];
+            const t2Back = matchState.positions[2]['FB-L'] + matchState.positions[2]['FB-C'] + matchState.positions[2]['FB-R'];
+            
+            const data = [t1Front, t1Back, t2Front, t2Back];
+            const labels = ['T1 Front', 'T1 Back', 'T2 Front', 'T2 Back'];
+            const colors = ['#1e88e5', '#42a5f5', '#ff6b6b', '#ef5350'];
+            
+            const max = Math.max(...data) || 10;
+            const padding = { left: 40, right: 10, top: 20, bottom: 30 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const barWidth = chartWidth / (data.length * 1.5);
+            
+            // Draw bars
+            data.forEach((value, idx) => {
+                const x = padding.left + (idx * barWidth * 1.5);
+                const barHeight = (value / max) * chartHeight;
+                const y = height - padding.bottom - barHeight;
+                
+                ctx.fillStyle = colors[idx];
+                ctx.fillRect(x, y, barWidth - 4, barHeight);
+                
+                // Labels
+                ctx.fillStyle = '#888';
+                ctx.font = '11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(labels[idx], x + barWidth / 2, height - padding.bottom + 15);
+                
+                // Value
+                ctx.fillStyle = '#eee';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText(value, x + barWidth / 2, y - 5);
+            });
         }
 
         // ===== Audio & Vibration =====
